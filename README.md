@@ -51,7 +51,7 @@ The **Target** box always shows how many objects are about to be keyed. If it sa
 
 > **Note:** This addon keys **Disable in Viewports** (the monitor icon), not the eye icon. The eye (*Hide in Viewport*) is per view layer and can't be animated. If you don't see the monitor icon in your Outliner, turn it on under the Outliner's **Filter → Restriction Toggles**.
 
-(docs/monitor_toggle.png)
+![Outliner filter with the monitor icon (Disable in Viewports) turned on](docs/monitor_toggle.png)
 
 ### Bringing them back: Reselect Last Keyed
 
