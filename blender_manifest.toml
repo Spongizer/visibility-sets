@@ -1,0 +1,35 @@
+schema_version = "1.0.0"
+
+id = "visibility_sets"
+version = "1.0.0"
+name = "Visibility Sets"
+tagline = "Recall disabled objects and keyframe their visibility"
+maintainer = "Sponge <spong0402@gmail.com>"
+
+type = "add-on"
+
+website = "https://github.com/Spongizer/visibility-sets"
+
+tags = ["Animation", "Object"]
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+copyright = [
+  "2026 Sponge",
+]
+
+# No network, no filesystem access, no camera, no microphone.
+# Leaving "permissions" out entirely is the correct declaration here.
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  ".*",
+  "*.zip",
+  "README.md",
+  "docs/",
+]
