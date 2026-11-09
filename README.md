@@ -4,18 +4,18 @@
 
 ## The problem
 
-Animating objects popping in and out is one of the most common things you do in Blender — and one of the most tedious.
+Animating objects popping in and out is one of the most common things you do in Blender, yet it is very tedious. 
 
 The usual move is to key **Disable in Viewports** (the monitor icon) and **Disable in Renders** (the camera icon). That works fine until you actually disable something. A disabled object **can't be selected in the viewport at all.** Blender clears its selection on the next redraw, so you can't box-select it, you can't Shift-click it, and `select_set(True)` silently does nothing.
 
-So the moment you need those objects back — to key them on again a few frames later — Blender has no way to give them back to you as a group. You end up digging through the Outliner, finding each object, hovering over its icon and pressing `I`, one object at a time. With 5 objects that's annoying. With 50 debris pieces, it's a whole evening.
+So the moment you need those objects back, to key them on again a few frames later, Blender has no way to give them back to you as a group. You end up digging through the Outliner, finding each object, hovering over its icon and pressing `I`, **one object at a time**. With 5 objects that's annoying. With 50 debris pieces, it's a whole evening.
 
 **Visibility Sets fixes this:**
 
-- **One-click visibility keys** — Show / Hide (render) and Enable / Disable (viewport) on every selected object at the current frame.
-- **Get disabled objects back instantly** — *Reselect Last Keyed* re-selects whatever you just keyed, even after it's been disabled.
-- **Named selection sets** — save groups of objects in your `.blend`, and recall them later, disabled or not.
-- **Nothing gets keyed by accident** — only a real selection is ever a target. No hidden "active object" fallback.
+- **One-click visibility keys**: Show / Hide (render) and Enable / Disable (viewport) on every selected object at the current frame.
+- **Get disabled objects back instantly**: *Reselect Last Keyed* re-selects whatever you just keyed, even after it's been disabled.
+- **Named selection sets**: save groups of objects in your `.blend`, and recall them later, disabled or not.
+- **Nothing gets keyed by accident**: only a real selection is ever a target. No hidden "active object" fallback.
 
 ![Hiding a group of objects and bringing them back with Visibility Sets](docs/animation_demo.gif)
 
@@ -45,11 +45,13 @@ Select your objects (in the viewport *or* the Outliner), go to the frame you wan
 
 Every selected object gets keyed at the current frame. Keys use **Constant** interpolation, so visibility snaps on and off instead of ramping.
 
-**Also key Render** — turn this on and Enable / Disable will key render visibility at the same time. Most of the time this is what you want: one click and the object is gone from both the viewport and the final render.
+**Also key Render**: turn this on and Enable / Disable will key render visibility at the same time. Most of the time this is what you want. One click and the object is gone from both the viewport and the final render.
 
-The **Target** box always shows how many objects are about to be keyed. If it says *Target: none*, the buttons are greyed out — nothing will be keyed until you select something.
+The **Target** box always shows how many objects are about to be keyed. If it says *Target: none*, the buttons are greyed out. Nothing will be keyed until you select something.
 
 > **Note:** This addon keys **Disable in Viewports** (the monitor icon), not the eye icon. The eye (*Hide in Viewport*) is per view layer and can't be animated. If you don't see the monitor icon in your Outliner, turn it on under the Outliner's **Filter → Restriction Toggles**.
+
+(docs/monitor_toggle.png)
 
 ### Bringing them back: Reselect Last Keyed
 
@@ -57,7 +59,7 @@ Every time you press Show / Hide / Enable / Disable, the addon remembers exactly
 
 That's the whole demo at the top of this page, and you don't need to set anything up:
 
-1. Frame 1 — select your objects → **Disable**
+1. Frame 1 → select your objects → **Disable**
 2. Jump to frame 50 → **Reselect Last Keyed**
 3. **Enable**
 
@@ -74,7 +76,7 @@ No shortcuts are assigned by default, so nothing clashes with your existing keym
 
 ## Selection Sets
 
-Reselect Last Keyed only remembers the **most recent** batch. Real scenes have several groups that come and go at different times — debris, muzzle flashes, props for one shot — and once they're all disabled, you still need a way to grab exactly the group you want.
+Reselect Last Keyed only remembers the **most recent** batch. Real scenes have several groups that come and go at different times, and once they're all disabled, you still need a way to grab exactly the group you want.
 
 That's what **Selection Sets** are for. Save a group once, and one click selects it again, whether it's visible or disabled.
 
@@ -88,7 +90,7 @@ That's what **Selection Sets** are for. Save a group once, and one click selects
 2. Select the objects and press **Store**. This replaces whatever was in the set.
 3. Repeat for each group.
 
-From then on, pick a set in the list and press **Reselect Sets** to select everything in it again — even if they're all disabled. Then key them like any other selection.
+From then on, pick a set in the list and press **Reselect Sets** to select everything in it again, **even if they're all disabled**. Then key them like any other selection.
 
 Sets are saved inside the `.blend` file. They store references to the objects themselves, not their names, so **renaming an object doesn't break a set**. Deleted objects are removed from sets automatically.
 
