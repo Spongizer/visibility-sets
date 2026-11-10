@@ -13,7 +13,6 @@ Benchmark scene for the numbers below: **20,000 objects, 2,000 refs in a set / 2
 | `_alive_objects()` | `Object.users_scene` per ref | One pass over every `scene.objects` into a set | **4.4 s → 2.8 ms** |
 | `_prune_refs()` | Indexed loop (`refs[i]`) | Iterate with `enumerate(refs)` | **126 ms → 0.7 ms** |
 | `_unblock()` | `hide_set` and `hide_viewport` interleaved per object | All `hide_get`/`hide_set` first, all `hide_viewport` writes last | **2.7x faster** |
-| `_scene_signature()` | — | Two object counts, O(N) each | **~2 ms** per call |
 
 ---
 
@@ -40,22 +39,21 @@ Each `hide_viewport` write marks the view layer out of sync. `hide_get`/`hide_se
 - Interleaving them per object makes the whole thing O(K·N).
 - Doing all the Base-level work first and all `hide_viewport` writes last was **measured 2.7x faster**.
 
-### `_vissets_prune_handler()`: the depsgraph handler
+### When pruning runs
 
-This runs on **every depsgraph update**, including each mouse move during a G/R/S drag, so the common path has to cost almost nothing. It sits behind two gates:
+Because a set's pointer keeps a deleted object alive, an unpruned ref would also get that object written into the `.blend`. Pruning runs:
 
-1. **`depsgraph.id_type_updated('COLLECTION')`**: adding, deleting, duplicating and unlinking objects all tag a Collection. Transforms and ordinary property edits don't. It's one C flag read, so drags cost ~0.
-2. **Object-count signature** `(len(scene.objects), len(bpy.data.objects))`: deleting an object always changes the scene's count, and adding one always changes `bpy.data`'s. Tracking both means "delete one + add one in the same update" still trips the check. Both counts are O(N) RNA walks (**~2 ms at 20k objects**), which is why they sit behind gate 1.
+- in a **`save_pre`** handler, so deleted objects are dropped before the file is written,
+- in a **`load_post`** handler, to clean files saved by older versions,
+- at the start of **Reselect Sets** and **Reselect Last Keyed**.
 
-The signature cache is keyed by scene **pointer**, not name, so renaming a scene can't leave a dead entry behind. (Undo may reallocate the Scene, which just costs one extra prune pass.)
-
-A missed structural change only leaves a stale count in the UI until the next one. Operators always go through `_reachable()`, which filters deleted objects on its own.
+Version 1.0 pruned from a `depsgraph_update_post` handler instead. It was gated to stay cheap, but a handler that runs on every depsgraph update (and writes to scene data) is a lot of machinery for a cosmetic benefit, so 1.1 dropped it. The trade-off: the object count shown next to a set can include deleted objects until the next save or reselect. Operators are unaffected, since `_reachable()` filters out objects that aren't in the view layer.
 
 ### `draw()` and UI lists
 
-- **No Outliner read in `draw()`.** Running `temp_override` on every redraw is wasteful and unsafe. The panel only reads `context.selected_objects`.
+- **No Outliner read in `draw()` or `poll()`.** Running `temp_override` on every redraw is wasteful and unsafe. The panel only reads `context.selected_objects`, and the operators check the full selection in `execute()`.
 - `context.selected_objects` is a C-built list, so it's cheaper than iterating the RNA collection into a set. `draw()` only needs its length, plus one membership pass when a set is expanded.
-- **`_reachable()` is for operators only.** Its per-object view-layer lookup is too costly for `draw()`, which just uses `len(refs)`. That count stays honest because the depsgraph handler prunes stale refs.
+- **`_reachable()` is for operators only.** Its per-object view-layer lookup is too costly for `draw()`, which just uses `len(refs)`.
 - **`VISSETS_UL_slots`** does no per-row loops: the count is `len()`, and reachability isn't checked.
 - **`VISSETS_UL_objects`** only draws visible rows, so it stays O(rows) no matter how big the set is. `filter_items()` returns empty lists (no filtering, no sorting, no work) unless a filter string or alpha sort is active.
 
@@ -80,7 +78,9 @@ That sync runs on every viewport redraw, so a disabled object can't hold a selec
 
 Outliner rows survive disabling, so a multi-selection made there is still readable. `selected_ids` only exists in Outliner context and needs the **WINDOW region** in the override, not just the area. It has to be read through `bpy.context` inside the override. Reading the captured `context` instead is what silently broke this before.
 
-### No active-object fallback in `_get_targets()`
+When an operator runs from the Outliner's right-click menu (`OUTLINER_MT_object`), `context.selected_ids` is read directly as well.
+
+### No active-object fallback in `_selected_objects()`
 
 Blender keeps `basact` pointing at the last active object even after everything is deselected. It shows up as a faint Outliner row and in the viewport header. Treating that as a target would key visibility on an object the user never picked, which is the worst possible failure mode here. If nothing is selected, nothing happens.
 
@@ -99,3 +99,9 @@ Keymap items are listed by `bl_label`. One "Set Visibility Keyframe" operator wi
 ### Unblock is self-healing
 
 The reselect operators clear `hide_viewport` **without a keyframe** on objects that refuse to select. The next frame change lets the animation system drive the flag back, and pressing Enable commits it as a keyframe instead.
+
+That only holds when there *is* an F-curve to drive it back. Objects disabled by hand, and the eye toggle (`hide_set`, which can't be animated), stay cleared until Ctrl+Z. This is intentional: it lets a set recall objects regardless of how they were hidden.
+
+### No preference changes
+
+Boolean properties get discrete F-curves, and Blender inserts their keys with Constant interpolation regardless of **Preferences → Animation → Default Interpolation** (checked on 4.2 and 5.2). Version 1.0 temporarily switched that preference while keying; 1.1 doesn't touch user preferences at all.
