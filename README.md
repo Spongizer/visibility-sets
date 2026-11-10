@@ -29,6 +29,7 @@ So the moment you need those objects back, to key them on again a few frames lat
 
 - **3D Viewport → Sidebar (`N`) → Visibility** tab
 - **3D Viewport → Object menu → Visibility Sets** (all the main actions, menu form)
+- **Outliner → right-click an object → Visibility Sets** (same menu, acting on the Outliner selection)
 
 <img src="docs/panel.png" alt="The Visibility Sets panel" width="280">
 
@@ -49,7 +50,7 @@ Every selected object gets keyed at the current frame. Keys use **Constant** int
 
 **Also key Render**: turn this on and Enable / Disable will key render visibility at the same time. Most of the time this is what you want. One click and the object is gone from both the viewport and the final render.
 
-The **Target** box always shows how many objects are about to be keyed. If it says *Target: none*, the buttons are greyed out. Nothing will be keyed until you select something.
+The **Target** box shows how many objects are selected in the viewport. The panel can't see the Outliner selection, so when the viewport has none it reads *Target: Outliner selection, if any*, and the buttons stay clickable: they key whatever is selected in the Outliner. If nothing is selected anywhere, you get a warning and nothing is keyed.
 
 > **Note:** This addon keys **Disable in Viewports** (the monitor icon), not the eye icon. The eye (*Hide in Viewport*) is per view layer and can't be animated. If you don't see the monitor icon in your Outliner, turn it on under the Outliner's **Filter → Restriction Toggles**.
 
@@ -71,8 +72,7 @@ Done. The objects are off from frame 1 and pop in at frame 50.
 
 No shortcuts are assigned by default, so nothing clashes with your existing keymap. To add your own:
 
-- **Right-click any button → Assign Shortcut**, or
-- **Edit → Preferences → Keymap → Object Mode**, where every action is listed by name (*Render: Hide*, *Viewport: Disable*, *Reselect Last Keyed*, …) with an empty key field ready to fill in.
+- **Right-click any button → Assign Shortcut.** Each action is its own operator (*Render: Hide*, *Viewport: Disable*, *Reselect Last Keyed*, …), so shortcuts show up by name in **Preferences → Keymap**.
 
 ---
 
@@ -100,12 +100,12 @@ Sets are saved inside the `.blend` file. They store references to the objects th
 
 Click the arrow next to the active set to expand its object list:
 
-- **Click an object's name** to select just that one (**Shift-click** to add it to the selection). The highlighted rows show what's currently selected, and the eye icon shows whether each object is currently disabled.
+- **Click an object's name** to select just that one (**Shift-click** to add it to the selection). The highlighted rows show what's currently selected, and the monitor icon shows whether each object is currently disabled.
 - **X** removes an object from the set. The object itself isn't touched.
 - **Add Selected** adds the current selection to the set, skipping objects already in it.
 - Use the search field and sort buttons at the bottom of the list to find objects in large sets.
 
-You can also build a set from the **Outliner**. Disabled objects can still be selected there (the rows stay selectable even when the objects aren't), and Visibility Sets reads the Outliner selection. Ctrl/Shift-select rows there and press **Store** or **Add Selected**. The keying buttons read it too.
+You can also build a set from the **Outliner**. Disabled objects can still be selected there (the rows stay selectable even when the objects aren't), and Visibility Sets reads the Outliner selection. Ctrl/Shift-select rows there and press **Store** or **Add Selected**, or right-click them → **Visibility Sets**.
 
 ### What "unblock" means
 
@@ -116,6 +116,8 @@ This is temporary by design:
 - Press **Enable** → that state gets committed as a keyframe (this is usually what you're about to do anyway).
 - Change frames → the animation drives the objects straight back to disabled.
 - Press **Ctrl+Z** → reverts it.
+
+Objects that were disabled by hand (with no keyframe) or hidden with the eye icon (`H`) are unblocked too, but nothing turns them back off on a frame change. Press **Ctrl+Z** if you didn't mean to keep them visible.
 
 If you'd rather only select objects that are already visible, open the **Adjust Last Operation** panel (bottom-left, or `F9`) right after reselecting and uncheck **Unblock Disabled**.
 
