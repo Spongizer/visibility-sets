@@ -2,6 +2,8 @@
 
 **Bulk-select objects that are already disabled, and keyframe their visibility in one click.**
 
+[![Download](https://img.shields.io/github/v/release/Spongizer/visibility-sets?label=Download&color=blue)](https://github.com/Spongizer/visibility-sets/releases/latest) · Requires Blender 4.2+ · [Installation](#installation)
+
 ## The problem
 
 Animating objects popping in and out is one of the most common things you do in Blender, yet it is very tedious. 
