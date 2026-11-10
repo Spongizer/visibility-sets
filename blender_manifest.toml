@@ -4,7 +4,7 @@ id = "visibility_sets"
 version = "1.1.0"
 name = "Visibility Sets"
 tagline = "Recall disabled objects and keyframe their visibility"
-maintainer = "Sponge <spong0402@gmail.com>"
+maintainer = "Sponge <https://github.com/Spongizer>"
 
 type = "add-on"
 
